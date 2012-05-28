@@ -8,14 +8,7 @@ You should only _need_ to edit logic.py, though you are welcome to modify others
 Get it running
 ==============
 
-To get the SampleAI running it's easiest to set up a virtualenv, install the requirements, then run player.py, like so:
-	virtualenv ve
-	source ve/bin/activate
-	pip install -r requirements
-	python player.py
-
-During development it's recommended you keep an instance of the SampleAI running on a different port (which can be changed in config.py) so as to give your AI something to compete with.
-
+Follow the instructions at [https://github.com/Wazoku/Shoreditch-Gamerunner](https://github.com/Wazoku/Shoreditch-Gamerunner) to set up a local environment for developing your AI. You can also look at [My bot](https://github.com/jscott1989/Shoreditch-JonnyBot) as an example of some of the changes which can be made. Mine isn't very good though, I'm sure you can do better!
 
 Basic overview
 --------------
@@ -64,4 +57,4 @@ The object "db" is passed in all calls, and it can be used to store information 
 * db.exists(id) - Does a document with the given id exist?
 * db.get_by_keys([keys]) - Get a number of documents by keys
 
-Remember that more than one game can be ongoing at a single time, so it's possible for database 
+Remember that more than one game can be ongoing at a single time, so it's possible for database to be shared amongst games. You should ensure you use unique ids when storing things in the database (e.g. by prefixing keys with the game id)
