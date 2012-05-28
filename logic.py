@@ -31,41 +31,66 @@ def start_turn(db, game, actions):
 		request = {}
 		offer = {}
 
+		# Loop through each resource ( idea/feature/coffee/website/cash)
 		for resource in RESOURCES:
+			# If the resource is required for what we're trying to purchase, and the requirements
+			# for that purchase are less than we currently have
 			if resource in requirements and requirements[resource] > game.resources[resource]:
+				# Build a request dictionary which maps the type of resource we want (e.g idea)
+				# to the amount of resources we require beyond what we currently have
 				request[resource] = requirements[resource] - game.resources[resource]
 			else:
+				# We don't require this resource. If we have more of this resource than
+				# we need for what we're trying to build, offer it in the trade.
 				to_offer = game.resources[resource] - requirements.get(resource, 0)
 				if to_offer > 0:
+					# Offer is a dictionary which maps the type of resource we're offering (e.g. idea)
+					# to the amount of resources we are willing to give away
 					offer[resource] = to_offer
-
+		# Try to make the trade - it will be offered to all other players, returning False if rejected by all, or returning
+		# the accepting player's unique game-specific ID if the trade is accepted.
 		return game.trade(offer, request)
 
 	### First try to trade for resources I need
 
+	# If we have less than the maximum number of generators
 	if sum(game.generators.values()) < MAX_RESOURCE_GENERATORS:
-		# Can build generators - try to trade for them
+		# Try to trade for them
 		if trade_for(GENERATOR_COST):
-			taking_turn = True
+			# The trade was successful, although we don't do anything special in this case
+			pass
 
+	# If we have less than the maximum number of improved generators
 	if sum(game.improved_generators.values()) < MAX_IMPROVED_RESOURCE_GENERATORS:
 		# Can improve one of our existing ones
 		if trade_for(GENERATOR_IMPROVEMENT_COST):
-			taking_turn = True
+			# The trade was successful, although we don't do anything special in this case
+			pass
 
+	# Always attempt to trade for the resources to purchase PR
 	trade_for(PR_COST)
 
 	# Then spend the resources
 
+	# While I have enough resources for a generator, and have less than the maximum number of generators,
+	# and it is still my turn (in case of running out of time)
 	while game.can_purchase_generator() and game.turn:
+		# Purchase a generator, this will return the type of generator purchased
 		generator_type = game.purchase_generator()
 		print "Purchased %s" % generator_type
 
+	# While I have enough resources to upgrade a generator, and have less than the maximum number of generators,
+	# and it is still my turn (in case of running out of time)
 	while game.can_upgrade_generator() and game.turn:
+		# Upgrade a generator, this will return the type of generator upgraded
+		# (I could also pass the type of generator to upgrade as a parameter to upgrade a
+		#  specific one)
 		generator_type = game.upgrade_generator()
 		print "Upgraded %s" % generator_type
 
+	# While I have enough resources to purchase PR and it is still my turn (in case of running out of time)
 	while game.can_purchase_pr() and game.turn:
+		# Purchase PR
 		game.purchase_pr()
 		print "Purchased PR"
 
@@ -83,7 +108,11 @@ def end_game(db, game, error=None):
 		print "Game over"
 
 def incoming_trade(db, game, player, offering, requesting):
+	# "player" is the unique game-specific ID of the player offering the trade
+	# offering is a dictionary mapping resource types (e.g. idea) to the number of resources of that type being offered
+	# requesting is a dictionary mapping resource types (e.g. idea) to the number of resources of that type being requested
 	# As long as I'm gaining at least one resource more than I'm giving away, I'll accept
 	if sum(offering.values()) > sum(requesting.values()):
 		return True
+	# Otherwise reject, regardless of what is being offered or requested
 	return False
